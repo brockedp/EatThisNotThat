@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "ViewRecipes";
+}
+@model FinalProject_Recipes.Models.Recipe
+<div style="align-content:center">
+    <div class="row" style="text-align:center;margin-left:120px;margin-right:100px">
+        @foreach (var item in Model.meals)
+        {
+            <div class="column">
+                <div class="border-style">
+                    <div class="results">
+                        @item.strMeal
+                    </div>
+                    <div>
+                        <a title=" @item.strMeal" href='@Url.Action("ViewRecipe", "Recipe", item)'>
+                            <img src='@Url.Content(item.strMealThumb)' width="200" style="margin:15px; border:solid;border-color:white;border-width:10px" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<style>
+    @@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+
+    .border-style {
+        color: black;
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+        font-family: 'Raleway', sans-serif;
+        font-size: medium;
+        border-color: white;
+        border-width: thick;
+        margin: 15px;
+    }
+
+
+
+    .recipe {
+        font-family: 'Raleway', sans-serif;
+    }
+</style>

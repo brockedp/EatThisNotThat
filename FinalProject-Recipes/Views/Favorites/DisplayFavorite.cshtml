@@ -1,0 +1,58 @@
+﻿
+@{
+    ViewData["Title"] = "DisplayFavorite";
+}
+
+@model IEnumerable<FinalProject_Recipes.Models.FavoriteRecipes>
+
+<h1>
+    Favorite Recipes
+</h1>
+
+<div class="row" style="align-content:center;margin-left:120px;margin-right:100px">
+    @foreach (var recipe in Model)
+    {
+        <div style="text-align:center">
+            <div class="border-style">
+                <div class="recipe">
+                    @recipe.RecipeName
+                </div>
+                <div>
+                    <a title=" @recipe.RecipeName" href='@Url.Action("ViewRecipe", "Favorites", recipe)'>
+                        <img src='@Url.Content(@recipe.RecipeImage)' width="200" style="margin:15px; border:solid;border-color:white;
+                            border-width:10px" />
+                    </a>
+                </div>
+                <div>
+                    @Html.ActionLink("Remove From List", "RemoveFavorite", "Favorites", recipe)
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+        @@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+     h1
+     {
+         font-family: 'Raleway', sans-serif;
+         font-weight:bold;
+         text-align: center;
+     }
+    .row
+    {
+        font-family: 'Raleway', sans-serif;
+    }
+
+    .border-style {
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+        font-family: 'Raleway', sans-serif;
+        font-size: medium;
+        border: solid;
+        border-color: transparent;
+        border-width: thick;
+        margin: 15px;
+    }
+</style>

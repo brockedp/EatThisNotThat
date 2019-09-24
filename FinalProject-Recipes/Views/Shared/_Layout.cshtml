@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] </title>
+
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
+    </environment>
+
+</head>
+<body>
+
+    <header class="container-fluid">
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-transparent" style="font-family:Bahnschrift;color:black;text-shadow:  -1px -1px 0 white, 1px -1px 0 white,
+    -1px 1px 0 white, 1px 1px 0 white">
+            <a class="navbar-brand" href=""><img src="~/EatThisNotThatLogo1.png" height="100" width="192" /></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home <span class="sr-only">(current)</span></a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" asp-area="" asp-controller="Browse" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Browse
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Beef">Beef</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Breakfast">Breakfast</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Chicken">Chicken</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Lamb">Lamb</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Pasta">Pasta</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Pork">Pork</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Seafood">Seafood</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Side">Side</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Starter">Starter</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Side">Side</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Browse" asp-action="Misc">Misc</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Recipe" asp-action="GetRandomRecipe">Random</a>
+                        </div>
+                    </li>
+
+                    <li class="nav-item active">
+                        <a class="nav-link" asp-area="" asp-controller="Recipe" asp-action="Search">Search Recipes <span class="sr-only">(current)</span></a>
+                    </li>
+
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" asp-area="" asp-controller="User" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Profile
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" asp-area="" asp-controller="Friend" asp-action="ViewFriends">Friends</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Group" asp-action="DisplayGroups">Groups</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Favorites" asp-action="DisplayFavorite">Favorites</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="User" asp-action="UserPage">Preferences</a>
+
+
+                        </div>
+                    </li>
+                    <partial name="_LoginPartial" />
+                </ul>
+            </div>
+
+        </nav>
+
+    </header>
+
+    <div class="container">
+        <partial name="_CookieConsentPartial" />
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <link rel="stylesheet" href="~/css/site.css" />
+        <div class="container" style="font-family:Bahnschrift">
+            &copy; 2019 - Eat This Not That
+        </div>
+    </footer>
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
+        </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o">
+        </script>
+    </environment>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>
+
+<style>
+    @@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+    @@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+
+    body {
+        background-image: url('../../FoodBackground.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-attachment: fixed;
+        background-size: cover;
+        height: 100%;
+        width: 100%;
+        font-size: 1.5rem;
+    }
+
+    .navbar-expand-lg .navbar-nav .nav-link {
+        padding-right: 2.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+        font-family: 'Raleway', sans-serif;
+        font-weight: bolder;
+        text-shadow: none;
+    }
+</style>

@@ -1,0 +1,741 @@
+﻿
+@{
+    ViewData["Title"] = "AutoComplete";
+}
+
+<h3>@TempData["RegexMatch"]</h3>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font: 16px Arial;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        /*the container must be positioned relative:*/
+        .autocomplete {
+            position: relative;
+            display: inline-block;
+        }
+
+        input {
+            border: 1px solid transparent;
+            background-color: #f1f1f1;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+            input[type=text] {
+                background-color: #f1f1f1;
+                width: 100%;
+            }
+
+            input[type=submit] {
+                background-color: DodgerBlue;
+                color: #fff;
+                cursor: pointer;
+            }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            /*position the autocomplete items to be the same width as the container:*/
+            top: 100%;
+            left: 0;
+            right: 0;
+        }
+
+            .autocomplete-items div {
+                padding: 10px;
+                cursor: pointer;
+                background-color: #fff;
+                border-bottom: 1px solid #d4d4d4;
+            }
+
+                /*when hovering an item:*/
+                .autocomplete-items div:hover {
+                    background-color: #e9e9e9;
+                }
+
+        /*when navigating through the items using the arrow keys:*/
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Search</h2>
+
+    <p>Search by Title:</p>
+
+    <!--Make sure the form has the autocomplete function switched off:-->
+    <form autocomplete="off" action="/Recipe/SearchRecipesTitle" method="post" pattern="^[a-zA-Z]+[ a-zA-Z]*$" />
+    <div class="search-title" style="width:300px;">
+        <input type="text" name="search" placeholder="Title">
+    </div>
+    <input type="submit" value="Search For Recipe">
+
+
+    <br />
+
+
+    <p>Search by Ingredient:</p>
+
+    <!--Make sure the form has the autocomplete function switched off:-->
+    <form autocomplete="off" action="/Recipe/SearchRecipesIngredients" method="post">
+        <div class="autocomplete" style="width:300px;">
+            <input id="myInput" type="text" name="search" placeholder="Ingredient" pattern="^[a-zA-Z]+[ a-zA-Z]*$" />
+        </div>
+        <input type="submit" value="Search For Recipe">
+    </form>
+
+    <script>
+        function autocomplete(inp, arr) {
+            /*the autocomplete function takes two arguments,
+            the text field element and an array of possible autocompleted values:*/
+            var currentFocus;
+            /*execute a function when someone writes in the text field:*/
+            inp.addEventListener("input", function (e) {
+                var a, b, i, val = this.value;
+                /*close any already open lists of autocompleted values*/
+                closeAllLists();
+                if (!val) { return false; }
+                currentFocus = -1;
+                /*create a DIV element that will contain the items (values):*/
+                a = document.createElement("DIV");
+                a.setAttribute("id", this.id + "autocomplete-list");
+                a.setAttribute("class", "autocomplete-items");
+                /*append the DIV element as a child of the autocomplete container:*/
+                this.parentNode.appendChild(a);
+                /*for each item in the array...*/
+                for (i = 0; i < arr.length; i++) {
+                    /*check if the item starts with the same letters as the text field value:*/
+                    if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                        /*create a DIV element for each matching element:*/
+                        b = document.createElement("DIV");
+                        /*make the matching letters bold:*/
+                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                        b.innerHTML += arr[i].substr(val.length);
+                        /*insert a input field that will hold the current array item's value:*/
+                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                        /*execute a function when someone clicks on the item value (DIV element):*/
+                        b.addEventListener("click", function (e) {
+                            /*insert the value for the autocomplete text field:*/
+                            inp.value = this.getElementsByTagName("input")[0].value;
+                            /*close the list of autocompleted values,
+                            (or any other open lists of autocompleted values:*/
+                            closeAllLists();
+                        });
+                        a.appendChild(b);
+                    }
+                }
+            });
+            /*execute a function presses a key on the keyboard:*/
+            inp.addEventListener("keydown", function (e) {
+                var x = document.getElementById(this.id + "autocomplete-list");
+                if (x) x = x.getElementsByTagName("div");
+                if (e.keyCode == 40) {
+                    /*If the arrow DOWN key is pressed,
+                    increase the currentFocus variable:*/
+                    currentFocus++;
+                    /*and and make the current item more visible:*/
+                    addActive(x);
+                } else if (e.keyCode == 38) { //up
+                    /*If the arrow UP key is pressed,
+                    decrease the currentFocus variable:*/
+                    currentFocus--;
+                    /*and and make the current item more visible:*/
+                    addActive(x);
+                } else if (e.keyCode == 13) {
+                    /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                        /*and simulate a click on the "active" item:*/
+                        if (x) x[currentFocus].click();
+                    }
+                }
+            });
+            function addActive(x) {
+                /*a function to classify an item as "active":*/
+                if (!x) return false;
+                /*start by removing the "active" class on all items:*/
+                removeActive(x);
+                if (currentFocus >= x.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (x.length - 1);
+                /*add class "autocomplete-active":*/
+                x[currentFocus].classList.add("autocomplete-active");
+            }
+            function removeActive(x) {
+                /*a function to remove the "active" class from all autocomplete items:*/
+                for (var i = 0; i < x.length; i++) {
+                    x[i].classList.remove("autocomplete-active");
+                }
+            }
+            function closeAllLists(elmnt) {
+                /*close all autocomplete lists in the document,
+                except the one passed as an argument:*/
+                var x = document.getElementsByClassName("autocomplete-items");
+                for (var i = 0; i < x.length; i++) {
+                    if (elmnt != x[i] && elmnt != inp) {
+                        x[i].parentNode.removeChild(x[i]);
+                    }
+                }
+            }
+            /*execute a function when someone clicks in the document:*/
+            document.addEventListener("click", function (e) {
+                closeAllLists(e.target);
+            });
+        }
+
+        /*An array containing all the country names in the world:*/
+        var countries = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Anguilla", "Antigua & Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia & Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands", "Central Arfrican Republic", "Chad", "Chile", "China", "Colombia", "Congo", "Cook Islands", "Costa Rica", "Cote D Ivoire", "Croatia", "Cuba", "Curacao", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Fiji", "Finland", "France", "French Polynesia", "French West Indies", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauro", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russia", "Rwanda", "Saint Pierre & Miquelon", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "St Kitts & Nevis", "St Lucia", "St Vincent", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor L'Este", "Togo", "Tonga", "Trinidad & Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks & Caicos", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States of America", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Virgin Islands (US)", "Yemen", "Zambia", "Zimbabwe"];
+        var ingredients = [
+            "Ackee ",
+            "Allspice ",
+            "Almond Extract ",
+            "Almond Milk ",
+            "Almonds ",
+            "Ancho Chillies ",
+            "Anchovy Fillet ",
+            "Apple Cider Vinegar ",
+            "Apples ",
+            "Apricot ",
+            "Apricot Jam ",
+            "Asparagus ",
+            "Aubergine ",
+            "Avocado ",
+            "Baby Aubergine ",
+            "Baby Plum Tomatoes ",
+            "Baby Squid ",
+            "Bacon ",
+            "Baguette ",
+            "Baked Beans ",
+            "Baking Powder ",
+            "Balsamic Vinegar ",
+            "Banana ",
+            "Barbeque Sauce ",
+            "Basil ",
+            "Basil Leaves ",
+            "Basmati Rice ",
+            "Bay Leaf ",
+            "Bay Leaves ",
+            "Bean Sprouts ",
+            "Beef ",
+            "Beef Brisket ",
+            "Beef Fillet ",
+            "Beef Gravy ",
+            "Beef Kidney ",
+            "Beef Shin ",
+            "Beef Stock ",
+            "Bicarbonate Of Soda ",
+            "Biryani Masala ",
+            "Black Beans ",
+            "Black Olives ",
+            "Black Pepper ",
+            "Black Pudding ",
+            "Black Treacle ",
+            "Blackberries ",
+            "Blue Food Colouring ",
+            "Blueberries ",
+            "Borlotti Beans ",
+            "Bouquet Garni ",
+            "Bowtie Pasta ",
+            "Braeburn Apples ",
+            "Bramley Apples ",
+            "Brandy ",
+            "Bread ",
+            "Breadcrumbs ",
+            "Brie ",
+            "Broad Beans ",
+            "Broccoli ",
+            "Brown Lentils ",
+            "Brown Rice ",
+            "Brown Sugar ",
+            "Brussels Sprouts ",
+            "Butter ",
+            "Butter Beans ",
+            "Butternut Squash ",
+            "Cabbage ",
+            "Cacao ",
+            "Cajun ",
+            "Canned Tomatoes ",
+            "Cannellini Beans ",
+            "Canola Oil ",
+            "Capers ",
+            "Caramel ",
+            "Caramel Sauce ",
+            "Cardamom ",
+            "Carrots ",
+            "Cashew Nuts ",
+            "Cashews ",
+            "Caster Sugar ",
+            "Cayenne Pepper ",
+            "Celeriac ",
+            "Celery ",
+            "Celery Salt ",
+            "Challots ",
+            "Charlotte Potatoes ",
+            "Cheddar Cheese ",
+            "Cheese ",
+            "Cheese Curds ",
+            "Cherry ",
+            "Cherry Tomatoes ",
+            "Chestnut Mushroom ",
+            "Chestnuts ",
+            "Chicken ",
+            "Chicken Breast ",
+            "Chicken Breasts ",
+            "Chicken Legs ",
+            "Chicken Stock ",
+            "Chicken Stock Cube ",
+            "Chicken Thighs ",
+            "Chickpeas ",
+            "Chili Powder ",
+            "Chilled Butter ",
+            "Chilli ",
+            "Chilli Powder ",
+            "Chinese Broccoli ",
+            "Chives ",
+            "Chocolate Chips ",
+            "Chopped Onion ",
+            "Chopped Parsley ",
+            "Chopped Tomatoes ",
+            "Chorizo ",
+            "Christmas Pudding ",
+            "Cilantro ",
+            "Cinnamon ",
+            "Cinnamon Stick ",
+            "Clams ",
+            "Clotted Cream ",
+            "Cloves ",
+            "Coco Sugar ",
+            "Cocoa ",
+            "Coconut Cream ",
+            "Coconut Milk ",
+            "Cod ",
+            "Colby Jack Cheese ",
+            "Cold Water ",
+            "Condensed Milk ",
+            "Cooking wine ",
+            "Coriander ",
+            "Coriander Leaves ",
+            "Coriander Seeds ",
+            "Corn Flour ",
+            "Corn Tortillas ",
+            "Cornstarch ",
+            "Courgettes ",
+            "Couscous ",
+            "Cream ",
+            "Cream Cheese ",
+            "Creamed Corn ",
+            "Creme Fraiche ",
+            "Crusty Bread ",
+            "Cubed Feta Cheese ",
+            "Cucumber ",
+            "Cumin ",
+            "Cumin Seeds ",
+            "Currants ",
+            "Curry Powder ",
+            "Custard ",
+            "Custard Powder ",
+            "Dark Brown Soft Sugar ",
+            "Dark Brown Sugar ",
+            "Dark Chocolate ",
+            "Dark Chocolate Chips ",
+            "Dark Rum ",
+            "Dark Soft Brown Sugar ",
+            "Dark Soy Sauce ",
+            "Demerara Sugar ",
+            "Desiccated Coconut ",
+            "Diced Tomatoes ",
+            "Digestive Biscuits ",
+            "Dijon Mustard ",
+            "Dill ",
+            "Doner Meat ",
+            "Doubanjiang ",
+            "Double Cream ",
+            "Dried Apricots ",
+            "Dried Fruit ",
+            "Dried Oregano ",
+            "Dry White Wine ",
+            "Duck ",
+            "Duck Fat ",
+            "Duck Legs ",
+            "Duck Sauce ",
+            "Egg ",
+            "Egg Plants ",
+            "Egg Rolls ",
+            "Egg White ",
+            "Egg Yolks ",
+            "Eggs ",
+            "Enchilada Sauce ",
+            "English Muffins ",
+            "English Mustard ",
+            "Extra Virgin Olive Oil ",
+            "Fajita Seasoning ",
+            "Farfalle ",
+            "Fennel ",
+            "Fennel Bulb ",
+            "Fennel Seeds ",
+            "Fenugreek ",
+            "Fermented Black Beans ",
+            "Feta ",
+            "Fettuccine ",
+            "Fideo ",
+            "Filo Pastry ",
+            "Fish Sauce ",
+            "Fish Stock ",
+            "Flaked Almonds ",
+            "Flax Eggs ",
+            "Flour ",
+            "Flour Tortilla ",
+            "Floury Potatoes ",
+            "Free-range Egg, Beaten ",
+            "Free-range Eggs, Beaten ",
+            "French Lentils ",
+            "Fresh Basil ",
+            "Fresh Thyme ",
+            "Freshly Chopped Parsley ",
+            "Fries ",
+            "Fromage Frais ",
+            "Frozen Peas ",
+            "Fruit Mix ",
+            "Full Fat Yogurt ",
+            "Garam Masala ",
+            "Garlic ",
+            "Garlic Clove ",
+            "Garlic Powder ",
+            "Garlic Sauce ",
+            "Gelatine Leafs ",
+            "Ghee ",
+            "Ginger ",
+            "Ginger Cordial ",
+            "Ginger Garlic Paste ",
+            "Ginger Paste ",
+            "Glace Cherry ",
+            "Goat Meat ",
+            "Goats Cheese ",
+            "Gochujang ",
+            "Golden Syrup ",
+            "Goose Fat ",
+            "Gouda Cheese ",
+            "Granulated Sugar ",
+            "Grape Tomatoes ",
+            "Greek Yogurt ",
+            "Green Beans ",
+            "Green Chilli ",
+            "Green Olives ",
+            "Green Pepper ",
+            "Green Red Lentils ",
+            "Green Salsa ",
+            "Ground Almonds ",
+            "Ground Beef ",
+            "Ground Cumin ",
+            "Ground Ginger ",
+            "GruyÃ¨re ",
+            "Haddock ",
+            "Ham ",
+            "Hard Taco Shells ",
+            "Haricot Beans ",
+            "Harissa Spice ",
+            "Hazlenuts ",
+            "Heavy Cream ",
+            "Honey ",
+            "Horseradish ",
+            "Hot Beef Stock ",
+            "Hotsauce ",
+            "Ice Cream ",
+            "Icing Sugar ",
+            "Italian Fennel Sausages ",
+            "Italian Seasoning ",
+            "Jalapeno ",
+            "Jasmine Rice ",
+            "Jerk ",
+            "Jerusalem Artichokes ",
+            "Kale ",
+            "Khus Khus ",
+            "Kidney Beans ",
+            "King Prawns ",
+            "Kosher Salt ",
+            "Lamb ",
+            "Lamb Kidney ",
+            "Lamb Leg ",
+            "Lamb Loin Chops ",
+            "Lamb Mince ",
+            "Lamb Shoulder ",
+            "Lard ",
+            "Lasagne Sheets ",
+            "Lean Minced Beef ",
+            "Leek ",
+            "Lemon ",
+            "Lemon Juice ",
+            "Lemon Zest ",
+            "Lemons ",
+            "Lentils ",
+            "Lettuce ",
+            "Light Brown Soft Sugar ",
+            "Light Rum ",
+            "Lime ",
+            "Linguine Pasta ",
+            "Little Gem Lettuce ",
+            "Macaroni ",
+            "Mackerel ",
+            "Madras Paste ",
+            "Malt Vinegar ",
+            "Maple Syrup ",
+            "Marjoram ",
+            "Mars Bar ",
+            "Marzipan ",
+            "Mascarpone ",
+            "Massaman Curry Paste ",
+            "Medjool Dates ",
+            "Meringue Nests ",
+            "Milk ",
+            "Milk Chocolate ",
+            "Minced Beef ",
+            "Minced Garlic ",
+            "Minced Pork ",
+            "Miniature Marshmallows ",
+            "Mint ",
+            "Mirin ",
+            "Mixed Grain ",
+            "Mixed Peel ",
+            "Monkfish ",
+            "Monterey Jack Cheese ",
+            "Mozzarella ",
+            "Mozzarella Balls ",
+            "Muffins ",
+            "Muscovado Sugar ",
+            "Mushrooms ",
+            "Mussels ",
+            "Mustard ",
+            "Mustard Powder ",
+            "Mustard Seeds ",
+            "Naan Bread ",
+            "Noodles ",
+            "Nutmeg ",
+            "Oatmeal ",
+            "Oats ",
+            "Oil ",
+            "Olive Oil ",
+            "Onion ",
+            "Onion Salt ",
+            "Onions ",
+            "Orange ",
+            "Orange Blossom Water ",
+            "Orange Zest ",
+            "Oregano ",
+            "Oxtail",
+            "Oyster Sauce",
+            "Oysters",
+            "Paccheri Pasta",
+            "Paella Rice ",
+            "Paneer ",
+            "Pappardelle Pasta ",
+            "Paprika ",
+            "Parma Ham ",
+            "Parmesan ",
+            "Parmesan Cheese ",
+            "Parmigiano-reggiano ",
+            "Parsley ",
+            "Passata ",
+            "Peaches ",
+            "Peanut Brittle ",
+            "Peanut Butter ",
+            "Peanut Cookies ",
+            "Peanut Oil ",
+            "Peanuts ",
+            "Pears ",
+            "Peas ",
+            "Pecan Nuts ",
+            "Pecorino ",
+            "Penne Rigate ",
+            "Pepper ",
+            "Pilchards ",
+            "Pine Nuts ",
+            "Pink Food Colouring ",
+            "Pinto Beans ",
+            "Pitted Black Olives ",
+            "Plain Chocolate ",
+            "Plain Flour ",
+            "Plum Tomatoes ",
+            "Pork ",
+            "Potato Starch ",
+            "Potatoes ",
+            "Prawns ",
+            "Pretzels ",
+            "Prosciutto ",
+            "Puff Pastry ",
+            "Pumpkin ",
+            "Raisins ",
+            "Rapeseed Oil ",
+            "Ras el hanout ",
+            "Raspberries ",
+            "Raspberry Jam ",
+            "Raw King Prawns ",
+            "Red Chile Flakes ",
+            "Red Chilli ",
+            "Red Chilli Powder ",
+            "Red Food Colouring ",
+            "Red Onions ",
+            "Red Pepper ",
+            "Red Pepper Flakes ",
+            "Red Snapper ",
+            "Red Wine ",
+            "Red Wine Jelly ",
+            "Red Wine Vinegar ",
+            "Redcurrants ",
+            "Refried Beans ",
+            "Rice ",
+            "Rice Krispies ",
+            "Rice Noodles ",
+            "Rice Stick Noodles ",
+            "Rice Vermicelli ",
+            "Rice Vinegar ",
+            "Rice wine ",
+            "Ricotta ",
+            "Rigatoni ",
+            "Roasted Vegetables ",
+            "Rocket ",
+            "Rolled Oats ",
+            "Rosemary ",
+            "Rum ",
+            "Saffron ",
+            "Sage ",
+            "Sake ",
+            "Salmon ",
+            "Salsa ",
+            "Salt ",
+            "Salt Cod ",
+            "Salted Butter ",
+            "Sausages ",
+            "Scallions ",
+            "Scotch Bonnet ",
+            "Sea Salt ",
+            "Self-raising Flour ",
+            "Semi-skimmed Milk ",
+            "Sesame Seed ",
+            "Sesame Seed Oil ",
+            "Shallots ",
+            "Shiitake Mushrooms ",
+            "Shortcrust Pastry ",
+            "Shredded Mexican Cheese ",
+            "Shredded Monterey Jack Cheese ",
+            "Sichuan Pepper ",
+            "Single Cream ",
+            "Small Potatoes ",
+            "Smoked Haddock ",
+            "Smoked Paprika ",
+            "Smoked Salmon ",
+            "Smoky Paprika ",
+            "Sour Cream ",
+            "Soy Sauce ",
+            "Soya Milk ",
+            "Spaghetti ",
+            "Spinach ",
+            "Spring Onions ",
+            "Squash ",
+            "Squid ",
+            "Star Anise ",
+            "Starch ",
+            "Stilton Cheese ",
+            "Stir-fry Vegetables ",
+            "Stout ",
+            "Strawberries ",
+            "Suet ",
+            "Sugar ",
+            "Sugar Snap Peas ",
+            "Sultanas ",
+            "Sun-Dried Tomatoes ",
+            "Sunflower Oil ",
+            "Swede ",
+            "Sweetcorn ",
+            "Tabasco Sauce ",
+            "Tagliatelle ",
+            "Tahini ",
+            "Tamarind Ball ",
+            "Tamarind Paste ",
+            "Tarragon Leaves ",
+            "Thai Fish Sauce ",
+            "Thai Green Curry Paste ",
+            "Thai Red Curry Paste ",
+            "Thyme ",
+            "Tiger Prawns ",
+            "Tinned Tomatos ",
+            "Toffee Popcorn ",
+            "Tofu ",
+            "Tomato ",
+            "Tomato Ketchup ",
+            "Tomato Puree ",
+            "Tomato Sauce ",
+            "Tomatoes ",
+            "Toor Dal ",
+            "Tortillas ",
+            "Treacle ",
+            "Tripe ",
+            "Truffle Oil ",
+            "Tuna ",
+            "Turkey Mince ",
+            "Turmeric ",
+            "Turmeric Powder ",
+            "Turnips ",
+            "Udon Noodles ",
+            "Unsalted Butter ",
+            "Vanilla ",
+            "Vanilla Extract ",
+            "Veal ",
+            "Vegan Butter ",
+            "Vegetable Oil ",
+            "Vegetable Stock ",
+            "Vegetable Stock Cube ",
+            "Vermicelli Pasta ",
+            "Vinaigrette Dressing ",
+            "Vine Leaves ",
+            "Vine Tomatoes ",
+            "Vinegar ",
+            "Walnuts ",
+            "Water ",
+            "Water Chestnut ",
+            "White Chocolate ",
+            "White Chocolate Chips ",
+            "White Fish ",
+            "White Fish Fillets ",
+            "White Flour ",
+            "White Vinegar ",
+            "White Wine ",
+            "White Wine Vinegar ",
+            "Whole Milk ",
+            "Whole Wheat ",
+            "Wholegrain Bread ",
+            "Wild Mushrooms ",
+            "Wonton Skin ",
+            "Wood Ear Mushrooms ",
+            "Worcestershire Sauce ",
+            "Yeast ",
+            "Yellow Food Colouring ",
+            "Yellow Pepper ",
+            "Yogurt ",
+            "Zucchini "
+        ];
+        /*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
+        autocomplete(document.getElementById("myInput"), ingredients);
+    </script>
+
+
+
+</body>
+</html>

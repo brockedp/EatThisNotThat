@@ -1,0 +1,61 @@
+﻿
+
+@model IEnumerable<FinalProject_Recipes.Models.AspNetUsers>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>
+    User Search
+</h2>
+
+
+
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by Username: <input type="text" name="SearchString" value="@ViewData["currentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-default"/> |
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
+<link rel="stylesheet" href="~/css/Tables.css" />
+<table class="content-table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            @if (item.Private == false || item.Private == null)
+
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)&nbsp;&nbsp;&nbsp;&nbsp;
+                        
+                        @Html.ActionLink("Add Friend", "AddFriend", "Friend", item)
+                        
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
